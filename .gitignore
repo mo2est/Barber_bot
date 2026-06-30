@@ -1,0 +1,22 @@
+# Секреты и локальная база
+.env
+*.db
+*.sqlite3
+/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store

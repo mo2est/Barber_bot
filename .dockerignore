@@ -1,0 +1,26 @@
+# Секреты — НЕ должны попадать в образ
+.env
+.env.*
+!.env.example
+
+# Виртуальное окружение и кэши — ставятся внутри образа заново
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Локальные БД и данные шедулера — не нужны в образе
+*.db
+*.sqlite3
+/data/
+
+# VCS и IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Не нужно внутри контейнера
+README.md

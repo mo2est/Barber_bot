@@ -1,0 +1,28 @@
+# Telegram bot
+aiogram==3.13.1
+
+# Database
+SQLAlchemy==2.0.35
+aiosqlite==0.20.0          # async-драйвер для SQLite (дев/демо)
+asyncpg==0.31.0            # async-драйвер для Postgres (прод)
+alembic==1.18.4            # миграции схемы БД
+
+# Scheduler (напоминания за час до записи)
+APScheduler==3.10.4
+
+# Config
+python-dotenv==1.0.1
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# Мониторинг ошибок (опционально, активируется через SENTRY_DSN в .env)
+sentry-sdk==2.18.0
+
+# Метрики Prometheus (/metrics эндпоинт)
+prometheus-client==0.25.0
+
+# Dev tools
+black==24.10.0             # форматирование кода
+ruff==0.6.9                # линтер
+pytest==9.1.1
+pytest-asyncio==1.4.0
