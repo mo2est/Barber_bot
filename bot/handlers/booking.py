@@ -6,6 +6,7 @@ from datetime import date as date_cls
 from datetime import datetime, timedelta
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -124,7 +125,10 @@ async def choose_master(
     )
     await state.set_state(BookingStates.choosing_date)
     await callback.answer()
-    await callback.message.edit_text(texts.CHOOSE_DATE, reply_markup=dates_kb())
+    try:
+        await callback.message.edit_text(texts.CHOOSE_DATE, reply_markup=dates_kb())
+    except TelegramBadRequest:
+        pass
 
 
 @router.callback_query(BookingStates.choosing_date, DateCb.filter())
