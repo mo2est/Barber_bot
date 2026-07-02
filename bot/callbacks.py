@@ -18,7 +18,7 @@ class DateCb(CallbackData, prefix="dt"):
 
 
 class SlotCb(CallbackData, prefix="slt"):
-    start_iso: str  # ISO datetime UTC
+    start_ts: int  # Unix timestamp UTC
 
 
 class ConfirmCb(CallbackData, prefix="cnf"):

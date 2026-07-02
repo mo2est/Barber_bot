@@ -168,10 +168,10 @@ async def choose_slot(
     callback: CallbackQuery, callback_data: SlotCb, state: FSMContext
 ) -> None:
     """Слот выбран — показываем подтверждение."""
-    start_utc = datetime.fromisoformat(callback_data.start_iso)
+    start_utc = datetime.utcfromtimestamp(callback_data.start_ts)
     data = await state.get_data()
 
-    await state.update_data(start_iso=callback_data.start_iso)
+    await state.update_data(start_ts=callback_data.start_ts)
     await state.set_state(BookingStates.confirming)
 
     text = texts.BOOKING_CONFIRM.format(
@@ -204,7 +204,7 @@ async def confirm_booking(
     # и не попадёт в этот хендлер второй раз.
     await state.clear()
 
-    start_utc = datetime.fromisoformat(data["start_iso"])
+    start_utc = datetime.utcfromtimestamp(data["start_ts"])
     duration_minutes = data["duration_minutes"]
     end_utc = start_utc + timedelta(minutes=duration_minutes)
 
