@@ -106,16 +106,18 @@ async def choose_master(
                 MasterService.service_id == data["service_id"],
             )
         )
+        if master is None or link is None:
+            await callback.answer(texts.BOOKING_NOT_FOUND, show_alert=True)
+            return
 
-    if master is None or link is None:
-        await callback.answer(texts.BOOKING_NOT_FOUND, show_alert=True)
-        return
+        price_kopecks = link.effective_price_kopecks
+        duration_minutes = link.effective_duration_minutes
 
     await state.update_data(
         master_id=master.id,
         master_name=master.name,
-        price_kopecks=link.effective_price_kopecks,
-        duration_minutes=link.effective_duration_minutes,
+        price_kopecks=price_kopecks,
+        duration_minutes=duration_minutes,
     )
     await state.set_state(BookingStates.choosing_date)
     await callback.answer()
