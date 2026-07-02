@@ -10,6 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from bot import texts
 from bot.callbacks import ConfirmCb, DateCb, MasterCb, ServiceCb, SlotCb
@@ -101,7 +102,9 @@ async def choose_master(
     async with async_session_factory() as session:
         master = await session.get(Master, callback_data.master_id)
         link = await session.scalar(
-            select(MasterService).where(
+            select(MasterService)
+            .options(selectinload(MasterService.service))
+            .where(
                 MasterService.master_id == callback_data.master_id,
                 MasterService.service_id == data["service_id"],
             )
