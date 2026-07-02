@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
+_WEEKDAYS_RU = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -80,7 +82,7 @@ def dates_kb() -> InlineKeyboardMarkup:
     rows = []
     for i in range(DATE_PICKER_DAYS):
         d = today + timedelta(days=i)
-        label = d.strftime("%d.%m (%a)")
+        label = f"{d.strftime('%d.%m')} ({_WEEKDAYS_RU[d.weekday()]})"
         rows.append(
             [
                 InlineKeyboardButton(
