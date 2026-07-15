@@ -6,15 +6,17 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from bot import texts
 from bot.callbacks import CancelBookingCb
 from bot.config import settings
 from bot.keyboards.client import my_bookings_kb
-from bot.services.booking import BookingNotFoundError, cancel_booking
+from bot.services.booking import BookingNotFoundError
+from bot.services.booking import cancel_booking as cancel_booking_service
 from bot.services.format import format_price, format_when
 from bot.services.reminders import cancel_reminder
-from db.models import Booking, BookingStatus, Client, Master, Service
+from db.models import Booking, BookingStatus, Client
 from db.session import async_session_factory
 
 router = Router(name="my_bookings")
@@ -27,6 +29,7 @@ async def _active_bookings(session, telegram_id: int) -> list[Booking]:
     return list(
         await session.scalars(
             select(Booking)
+            .options(selectinload(Booking.master), selectinload(Booking.service))
             .where(Booking.client_id == client.id, Booking.status == BookingStatus.ACTIVE)
             .order_by(Booking.start_at)
         )
@@ -44,13 +47,11 @@ async def list_bookings(message: Message) -> None:
 
         lines = [texts.MY_BOOKINGS_HEADER, ""]
         for b in bookings:
-            master = await session.get(Master, b.master_id)
-            service = await session.get(Service, b.service_id)
             lines.append(
                 texts.BOOKING_LINE.format(
                     when=format_when(b.start_at, settings.timezone),
-                    service=service.name if service else "?",
-                    master=master.name if master else "?",
+                    service=b.service.name if b.service else "?",
+                    master=b.master.name if b.master else "?",
                     price=format_price(b.price_kopecks),
                 )
             )
@@ -61,7 +62,7 @@ async def list_bookings(message: Message) -> None:
 
 
 @router.callback_query(CancelBookingCb.filter())
-async def cancel_booking(
+async def cancel_booking_handler(
     callback: CallbackQuery,
     callback_data: CancelBookingCb,
     scheduler: AsyncIOScheduler,
@@ -69,7 +70,7 @@ async def cancel_booking(
     """Отменить запись по кнопке под списком «Мои записи»."""
     try:
         async with async_session_factory() as session:
-            booking = await cancel_booking(
+            booking = await cancel_booking_service(
                 session,
                 telegram_id=callback.from_user.id,
                 booking_id=callback_data.booking_id,
