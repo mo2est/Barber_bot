@@ -15,6 +15,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from bot import texts
 from bot.callbacks import (
@@ -40,7 +41,7 @@ from bot.services.timeoff import (
     parse_timeoff_text,
 )
 from bot.states import AdminStates
-from db.models import Booking, BookingStatus, Client, Master, Service, TimeOff
+from db.models import Booking, BookingStatus, Master, Service, TimeOff
 from db.session import async_session_factory
 
 router = Router(name="admin")
@@ -70,6 +71,11 @@ async def _render_today(session) -> str:
     bookings = list(
         await session.scalars(
             select(Booking)
+            .options(
+                selectinload(Booking.master),
+                selectinload(Booking.service),
+                selectinload(Booking.client),
+            )
             .where(
                 Booking.status == BookingStatus.ACTIVE,
                 Booking.start_at >= day_start_utc,
@@ -83,15 +89,12 @@ async def _render_today(session) -> str:
 
     lines = [texts.ADMIN_TODAY_HEADER]
     for b in bookings:
-        master = await session.get(Master, b.master_id)
-        service = await session.get(Service, b.service_id)
-        client = await session.get(Client, b.client_id)
         lines.append(
             texts.ADMIN_BOOKING_LINE.format(
                 time=to_local(b.start_at, settings.timezone).strftime("%H:%M"),
-                service=service.name if service else "?",
-                master=master.name if master else "?",
-                client=(client.first_name or client.username or client.telegram_id) if client else "?",
+                service=b.service.name if b.service else "?",
+                master=b.master.name if b.master else "?",
+                client=(b.client.first_name or b.client.username or b.client.telegram_id) if b.client else "?",
             )
         )
     return "\n".join(lines)
