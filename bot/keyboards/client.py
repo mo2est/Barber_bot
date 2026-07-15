@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-_WEEKDAYS_RU = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -34,6 +32,8 @@ from bot.services.format import to_local
 from db.models import Booking, Master, Service
 
 DATE_PICKER_DAYS = 7
+
+_WEEKDAYS_RU = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
 
 def main_menu_kb() -> ReplyKeyboardMarkup:

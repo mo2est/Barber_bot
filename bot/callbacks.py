@@ -29,10 +29,6 @@ class CancelBookingCb(CallbackData, prefix="cancel_bk"):
     booking_id: int
 
 
-class BookingNavCb(CallbackData, prefix="bk_nav"):
-    action: str  # "back_to_services" | "back_to_masters" | "back_to_dates"
-
-
 # ── Админ-панель ─────────────────────────────────────────────────────────────
 
 

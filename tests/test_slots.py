@@ -65,7 +65,6 @@ async def test_timeoff_blocks_overlapping_slots(session, master, service):
 
 async def test_existing_booking_blocks_overlapping_slot(session, master, service, client):
     workday = _next_weekday(dt.date.today() + dt.timedelta(days=14), 0)
-    tz = ZoneInfo(TZ)
 
     slots = await get_free_slots(session, master.id, service.duration_minutes, workday, TZ)
     target_slot = slots[0]
