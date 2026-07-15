@@ -23,6 +23,7 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import ErrorEvent
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -156,6 +157,27 @@ async def _run_webhook(bot: Bot, dp: Dispatcher, scheduler: AsyncIOScheduler) ->
         await bot.session.close()
 
 
+async def on_error(event: ErrorEvent) -> None:
+    """Глобальный обработчик необработанных исключений в хендлерах.
+
+    Логирует ошибку (и отдаёт её в Sentry, если он подключён) и отвечает
+    пользователю нейтральным сообщением — иначе клиент остаётся с вечными
+    «часиками» на кнопке и не понимает, что что-то пошло не так.
+    """
+    logging.getLogger("bot.errors").exception(
+        "Необработанная ошибка в хендлере: %s", event.exception, exc_info=event.exception
+    )
+    try:
+        if event.update.callback_query is not None:
+            await event.update.callback_query.answer(
+                "Что-то пошло не так. Попробуйте ещё раз.", show_alert=True
+            )
+        elif event.update.message is not None:
+            await event.update.message.answer("Что-то пошло не так. Попробуйте ещё раз.")
+    except Exception:  # noqa: BLE001 — уведомление best-effort, падать из-за него нельзя
+        pass
+
+
 async def main() -> None:
     setup_logging()
     setup_sentry()
@@ -168,6 +190,7 @@ async def main() -> None:
     dp = Dispatcher()
     dp.message.middleware(ThrottlingMiddleware())
     dp.callback_query.middleware(ThrottlingMiddleware())
+    dp.errors.register(on_error)
     dp.include_router(get_root_router())
 
     scheduler = build_scheduler()
