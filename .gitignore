@@ -20,3 +20,6 @@ venv/
 .idea/
 *.swp
 .DS_Store
+
+# Артефакты анализа кода (локальные)
+graphify-out/
