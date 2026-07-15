@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from aiogram.types import (
     InlineKeyboardButton,
@@ -102,7 +102,11 @@ def slots_kb(slots_utc: list[datetime], tz_name: str) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(
                     text=local.strftime("%H:%M"),
-                    callback_data=SlotCb(start_ts=int(start_utc.timestamp())).pack(),
+                    callback_data=SlotCb(
+                        start_ts=int(
+                            start_utc.replace(tzinfo=timezone.utc).timestamp()
+                        )
+                    ).pack(),
                 )
             ]
         )
