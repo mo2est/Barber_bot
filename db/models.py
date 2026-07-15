@@ -17,7 +17,6 @@ from typing import Optional
 from sqlalchemy import (
     BigInteger,
     Boolean,
-    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -175,13 +174,21 @@ class MasterService(Base):
 
     @property
     def effective_price_kopecks(self) -> int:
-        """Финальная цена с учётом override."""
-        return self.price_override_kopecks or self.service.base_price_kopecks
+        """Финальная цена с учётом override.
+
+        Сравнение именно с None: override == 0 — валидная цена
+        (акция «бесплатно»), а не признак отсутствия переопределения.
+        """
+        if self.price_override_kopecks is not None:
+            return self.price_override_kopecks
+        return self.service.base_price_kopecks
 
     @property
     def effective_duration_minutes(self) -> int:
         """Финальная длительность с учётом override."""
-        return self.duration_override_minutes or self.service.duration_minutes
+        if self.duration_override_minutes is not None:
+            return self.duration_override_minutes
+        return self.service.duration_minutes
 
 
 class WorkingHours(Base):

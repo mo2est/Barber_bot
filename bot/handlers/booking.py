@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date as date_cls
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
@@ -168,7 +168,7 @@ async def choose_slot(
     callback: CallbackQuery, callback_data: SlotCb, state: FSMContext
 ) -> None:
     """Слот выбран — показываем подтверждение."""
-    start_utc = datetime.utcfromtimestamp(callback_data.start_ts)
+    start_utc = datetime.fromtimestamp(callback_data.start_ts, tz=timezone.utc).replace(tzinfo=None)
     data = await state.get_data()
 
     await state.update_data(start_ts=callback_data.start_ts)
@@ -204,7 +204,7 @@ async def confirm_booking(
     # и не попадёт в этот хендлер второй раз.
     await state.clear()
 
-    start_utc = datetime.utcfromtimestamp(data["start_ts"])
+    start_utc = datetime.fromtimestamp(data["start_ts"], tz=timezone.utc).replace(tzinfo=None)
     duration_minutes = data["duration_minutes"]
     end_utc = start_utc + timedelta(minutes=duration_minutes)
 
