@@ -19,7 +19,10 @@ def test_root_router_builds():
 
     root = get_root_router()
     names = {r.name for r in root.sub_routers}
-    assert names == {"admin", "booking", "my_bookings", "start"}
+    assert names == {"admin", "booking", "my_bookings", "start", "fallback"}
+    # fallback обязан подключаться последним — он ловит колбэки,
+    # не подошедшие ни одному хендлеру выше (устаревшие кнопки).
+    assert root.sub_routers[-1].name == "fallback"
 
 
 def test_cancel_handler_does_not_shadow_service():

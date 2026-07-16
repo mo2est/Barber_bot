@@ -40,6 +40,7 @@ from bot.services.timeoff import (
     create_timeoff,
     parse_timeoff_text,
 )
+from bot.services.ui import remove_inline_kb
 from bot.states import AdminStates
 from db.models import Booking, BookingStatus, Master, Service, TimeOff
 from db.session import async_session_factory
@@ -58,6 +59,10 @@ async def admin_menu(message: Message, state: FSMContext) -> None:
         await message.answer(texts.ADMIN_ONLY)
         return
 
+    # Незавершённый сценарий блокировки: снимаем клавиатуру со старого
+    # промпта, чтобы кнопки выбора мастера не остались висеть в чате.
+    data = await state.get_data()
+    await remove_inline_kb(message.bot, message.chat.id, data.get("prompt_msg_id"))
     await state.clear()
     await message.answer(texts.ADMIN_MENU, reply_markup=admin_menu_kb())
 
@@ -144,6 +149,7 @@ async def admin_menu_action(
             await callback.message.edit_text(texts.ADMIN_NO_BOOKINGS_TODAY)
             return
         await state.set_state(AdminStates.timeoff_choosing_master)
+        await state.update_data(prompt_msg_id=callback.message.message_id)
         await callback.message.edit_text(
             texts.ADMIN_TIMEOFF_CHOOSE_MASTER, reply_markup=admin_timeoff_masters_kb(masters)
         )

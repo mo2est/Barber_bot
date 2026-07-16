@@ -39,6 +39,8 @@ INFO = (
 
 NOT_IMPLEMENTED = "Эта функция скоро появится 🛠️"
 
+STALE_BUTTON = "Эта кнопка устарела. Откройте меню заново 👇"
+
 # ── Запись ───────────────────────────────────────────────────────────────────
 
 CHOOSE_SERVICE = "Выберите услугу:"
@@ -100,7 +102,6 @@ BTN_ADMIN_MASTERS = "👤 Мастера"
 BTN_ADMIN_SERVICES = "✂️ Услуги"
 BTN_ADMIN_TIMEOFF = "🚫 Заблокировать время"
 BTN_ADMIN_TIMEOFF_LIST = "📋 Список блокировок"
-BTN_ADMIN_BACK = "⬅️ В меню"
 
 ADMIN_MASTERS_HEADER = "Мастера (нажмите, чтобы включить/выключить):"
 ADMIN_MASTER_LINE = "{mark} {name}"

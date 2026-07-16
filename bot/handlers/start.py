@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from aiogram import F, Router
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy import select
 
 from bot import texts
 from bot.keyboards.client import main_menu_kb
+from bot.services.ui import remove_inline_kb
 from db.models import Client
 from db.session import async_session_factory
 
@@ -54,8 +56,16 @@ async def _get_or_create_client(message: Message) -> tuple[Client, bool]:
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message) -> None:
-    """Приветствие при /start. Создаёт клиента в БД, если его ещё нет."""
+async def cmd_start(message: Message, state: FSMContext) -> None:
+    """Приветствие при /start. Создаёт клиента в БД, если его ещё нет.
+
+    Повторный /start сбрасывает незавершённый сценарий и снимает
+    клавиатуру с его последнего промпта — активных кнопок не остаётся.
+    """
+    data = await state.get_data()
+    await remove_inline_kb(message.bot, message.chat.id, data.get("prompt_msg_id"))
+    await state.clear()
+
     client, is_new = await _get_or_create_client(message)
     name = client.first_name or "друг"
 

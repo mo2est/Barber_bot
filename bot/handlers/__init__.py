@@ -6,15 +6,21 @@ from aiogram import Router
 
 from bot.handlers.admin import router as admin_router
 from bot.handlers.booking import router as booking_router
+from bot.handlers.fallback import router as fallback_router
 from bot.handlers.my_bookings import router as my_bookings_router
 from bot.handlers.start import router as start_router
 
 
 def get_root_router() -> Router:
-    """Собрать главный роутер со всеми подроутерами."""
+    """Собрать главный роутер со всеми подроутерами.
+
+    fallback_router обязан быть последним: он ловит колбэки,
+    не подошедшие ни одному хендлеру выше (устаревшие кнопки).
+    """
     root = Router(name="root")
     root.include_router(admin_router)
     root.include_router(booking_router)
     root.include_router(my_bookings_router)
     root.include_router(start_router)
+    root.include_router(fallback_router)
     return root

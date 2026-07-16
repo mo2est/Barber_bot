@@ -33,6 +33,7 @@ from bot.services.booking import (
 from bot.services.format import format_price, format_when
 from bot.services.reminders import schedule_reminder
 from bot.services.slots import get_free_slots
+from bot.services.ui import remove_inline_kb
 from bot.states import BookingStates
 from db.models import Master, MasterService, Service
 from db.session import async_session_factory
@@ -42,7 +43,15 @@ router = Router(name="booking")
 
 @router.message(F.text == texts.BTN_BOOK)
 async def start_booking(message: Message, state: FSMContext) -> None:
-    """Кнопка «Записаться» — показываем список услуг."""
+    """Кнопка «Записаться» — показываем список услуг.
+
+    Если предыдущий сценарий записи не был завершён, снимаем клавиатуру
+    с его последнего промпта, чтобы в чате не оставалось активных кнопок.
+    """
+    old_data = await state.get_data()
+    await remove_inline_kb(message.bot, message.chat.id, old_data.get("prompt_msg_id"))
+    await state.clear()
+
     async with async_session_factory() as session:
         services = list(
             await session.scalars(
@@ -55,7 +64,8 @@ async def start_booking(message: Message, state: FSMContext) -> None:
         return
 
     await state.set_state(BookingStates.choosing_service)
-    await message.answer(texts.CHOOSE_SERVICE, reply_markup=services_kb(services))
+    prompt = await message.answer(texts.CHOOSE_SERVICE, reply_markup=services_kb(services))
+    await state.update_data(prompt_msg_id=prompt.message_id)
 
 
 @router.callback_query(BookingStates.choosing_service, ServiceCb.filter())
